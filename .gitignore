@@ -1,0 +1,10 @@
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+
+# Local data and generated artifacts
+yf_data/
+yf_data.zip
+close.parquet
+grid_results*.csv
+function_sets-Copy1.ipynb
