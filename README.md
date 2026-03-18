@@ -1,69 +1,53 @@
-# Long-short Neutralized Equity Alpha Research (US Top 3000)
+# US Equity Alpha Research
 
-by Joseph Shih, Sep 2025
+<p align="center">
+  Long-short, cross-sectional U.S. equity research with robust signal construction, regime overlays, and notebook-driven diagnostics.
+</p>
 
-This repository studies a daily, cross-sectional U.S. equity universe designed to cover large-, mid-, and small-cap names. The repo stays flat on purpose: the notebooks and Python modules reference one another and use local relative paths.
+## Snapshot
 
-## Data Overview
-- Universe: top ~3000 U.S. common stocks by float-adjusted market cap, with dynamic membership
-- Time span: `2015-01-01` to `2022-12-31`
-- Frequency: daily bars
-- Core fields: `open`, `high`, `low`, `close`, `volume`, plus sector and industry mappings
-- Derived fields: log returns, rolling robust volatility, and tradability masks
+| Item | Detail |
+| --- | --- |
+| Universe | top `~3000` U.S. common stocks |
+| Coverage | `2015-01-01` to `2022-12-31` |
+| Frequency | daily |
+| Portfolio style | long-short, neutralized, risk-scaled |
+| Core themes | EMA trend, HMM regime scaling, Kalman smoothing |
 
-## Repository Layout
-- `alpha_*.py`, `risk_overlays.py`, `kalman_overlays.py`, `simfin_loading.py`, `sector_loader.py`: core research modules
-- `grid_search_*.py`: parameter search helpers
-- `alpha_mom.ipynb`, `alpha_mom_v2.ipynb`, `hmm_alpha.ipynb`, `ma_crossover.ipynb`, `function_sets.ipynb`: main notebooks
-- `image/`: checked-in plot assets
-- `yf_data/`, `close.parquet`, `yf_data.zip`, `grid_results*.csv`: local data or generated artifacts excluded by `.gitignore`
+## Performance Snapshot
+
+| Alpha | Annual Sharpe | CAGR | Total Return | Turnover | Max Drawdown |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| EMA Crossover | `2.65` | `0.327` | `9.128` | `0.447` | `-0.159` |
+| HMM Overlay | `2.11` | `0.254` | `5.3707` | `0.3095` | `-0.1686` |
+| Kalman Overlay | `2.12` | `0.0838` | `0.93` | `0.110` | `-0.062` |
+
+## Visual Diagnostics
+
+| EMA | HMM | Kalman |
+| --- | --- | --- |
+| ![EMA](image/ema.png) | ![HMM](image/HMM.png) | ![Kalman](image/kalman.png) |
+
+## Research Stack
+
+| Layer | Files |
+| --- | --- |
+| Signal modules | `alpha_*.py`, `risk_overlays.py`, `kalman_overlays.py`, `simfin_loading.py`, `sector_loader.py` |
+| Search utilities | `grid_search_pipeline.py`, `grid_search_with_regime.py` |
+| Main notebooks | [`alpha_mom.ipynb`](alpha_mom.ipynb), [`alpha_mom_v2.ipynb`](alpha_mom_v2.ipynb), [`hmm_alpha.ipynb`](hmm_alpha.ipynb), [`ma_crossover.ipynb`](ma_crossover.ipynb), [`function_sets.ipynb`](function_sets.ipynb) |
+| Versioned lightweight inputs | `tickers.csv`, `company_tickers.json` |
+| Local-only artifacts | `yf_data/`, `close.parquet`, `yf_data.zip`, `grid_results*.csv` |
 
 ## Pipeline
-1. Build an alpha matrix.
-2. Convert signals to neutralized portfolio weights.
-3. Optionally apply vol targeting or regime overlays.
-4. Backtest with costs and score results with the quality function.
 
-## Main Alphas
-### Alpha 1: EMA Crossover
-Momentum signal on log prices with robust tail gating and inverse-vol scaling.
+1. Build an alpha matrix from daily price, volume, or fundamentals.
+2. Convert signals into neutralized portfolio weights.
+3. Apply optional vol targeting or regime overlays.
+4. Backtest with transaction costs and score results with the kinked quality function.
 
-Performance:
-- Annual Sharpe: `2.65`
-- CAGR: `0.327`
-- Total Return: `9.128`
-- Turnover: `0.447`
-- Maximum Drawdown: `-0.159`
-- Max Weight: `0.0158`
+## Repo Notes
 
-![EMA PnL](https://github.com/spurs7216/US-equity/blob/master/image/ema.png)
-
-### Alpha 2: Hidden Markov Model Overlay
-Two-state Gaussian HMM on a robust market proxy; exposure is scaled rather than flipped in weak regimes.
-
-Performance:
-- Annual Sharpe: `2.11`
-- CAGR: `0.254`
-- Total Return: `5.3707`
-- Turnover: `0.3095`
-- Maximum Drawdown: `-0.1686`
-
-![HMM PnL](https://github.com/spurs7216/US-equity/blob/master/image/HMM.png)
-
-### Alpha 3: Kalman Filter Overlay
-Forward-only Kalman smoothing on the HMM exposure scale to reduce regime jitter.
-
-Performance:
-- Annual Sharpe: `2.12`
-- CAGR: `0.0838`
-- Total Return: `0.93`
-- Turnover: `0.110`
-- Maximum Drawdown: `-0.062`
-- Max Weight: `0.00988`
-
-![Kalman PnL](https://github.com/spurs7216/US-equity/blob/master/image/kalman.png)
-
-## Notes
+- The project stays flat because the notebooks and modules rely on direct relative imports and local paths.
 - `ma_crossover.ipynb` was preserved from the existing repo because it differs from the old workspace copy and appears newer.
-- `function_sets-Copy1.ipynb` is treated as local scratch and ignored.
-- `tickers.csv` and `company_tickers.json` remain versioned because they are lightweight inputs rather than large generated outputs.
+- `function_sets-Copy1.ipynb` is treated as scratch and kept out of Git by `.gitignore`.
+- The README structure is inspired by the best parts of public quant and ML-for-trading repos: a strong top snapshot, a quick performance table, a visual section, and a clear file map.
