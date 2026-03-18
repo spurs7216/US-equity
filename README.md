@@ -1,8 +1,24 @@
 # US Equity Alpha Research
 
 <p align="center">
-  Long-short, cross-sectional U.S. equity research with robust signal construction, regime overlays, and notebook-driven diagnostics.
+  A long-short U.S. equity research sandbox focused on robust cross-sectional signals, regime-aware overlays, and cleaner risk-adjusted implementation.
 </p>
+
+<p align="center">
+  <a href="alpha_mom.ipynb">Momentum Notebook</a> |
+  <a href="hmm_alpha.ipynb">HMM Overlay</a> |
+  <a href="ma_crossover.ipynb">MA Crossover</a> |
+  <a href="function_sets.ipynb">Function Set</a>
+</p>
+
+## Research Thesis
+
+The objective is not to maximize raw backtest return. The objective is to build equity signals that remain usable after neutralization, turnover control, and regime scaling. This repo therefore emphasizes:
+
+- robust signal construction on noisy daily cross-sections
+- exposure control through HMM and Kalman overlays
+- practical portfolio formation rather than pure indicator ranking
+- notebook diagnostics that make failure modes visible quickly
 
 ## Snapshot
 
