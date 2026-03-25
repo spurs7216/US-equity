@@ -1,7 +1,7 @@
 
 import pandas as pd
 from typing import Optional
-from kalman_overlays import build_regime_scale, apply_scale_to_weights
+from us_equity.overlays.kalman_overlays import build_regime_scale, apply_scale_to_weights
 
 def regime_post_scale(weights: pd.DataFrame, close: pd.DataFrame,
                       mode: str = "dynamic",

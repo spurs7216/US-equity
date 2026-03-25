@@ -194,7 +194,7 @@ def cli():
     parser.add_argument("--tickers", type=str, required=True, help="CSV with a 'ticker' column")
     parser.add_argument("--start", type=str, default="2015-01-01")
     parser.add_argument("--end", type=str, default="2022-12-31")
-    parser.add_argument("--outdir", type=str, default="./data")
+    parser.add_argument("--outdir", type=str, default="./data/market/yf_data")
     parser.add_argument("--chunk", type=int, default=200)
     parser.add_argument("--no-auto-adjust", action="store_true", help="Use unadjusted OHLC + explicit Adj Close")
     parser.add_argument("--progress", action="store_true")

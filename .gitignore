@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 
 # Local data and generated artifacts
-yf_data/
-yf_data.zip
-close.parquet
-grid_results*.csv
-function_sets-Copy1.ipynb
+data/market/yf_data/
+data/market/close.parquet
+data/archives/yf_data.zip
+outputs/grid_search/*.csv
+notebooks/scratch/function_sets-Copy1.ipynb

@@ -10,7 +10,7 @@
 #       rets = to_returns(prices)
 #
 #   2) CLI (requires a CSV with 'ticker' column; optional 'start_date','end_date' per row)
-#       python yf_price_pipeline.py --tickers tickers.csv --start 2015-01-01 --end 2022-12-31 --outdir data/
+#       python scripts/yf_price_pipeline.py --tickers data/reference/tickers.csv --start 2015-01-01 --end 2022-12-31 --outdir data/market/yf_data
 #
 # Notes:
 #   - Uses Adj Close (auto_adjust=True) so splits/dividends are handled.
@@ -153,7 +153,7 @@ def cli():
                         help="CSV file with a 'ticker' column (optionally start_date,end_date per row).")
     parser.add_argument("--start", type=str, default="2015-01-01")
     parser.add_argument("--end", type=str, default="2022-12-31")
-    parser.add_argument("--outdir", type=str, default="./data")
+    parser.add_argument("--outdir", type=str, default="./data/market/yf_data")
     parser.add_argument("--chunk", type=int, default=200)
     parser.add_argument("--cost_bps", type=float, default=5.0)
     args = parser.parse_args()
