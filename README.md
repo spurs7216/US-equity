@@ -1,43 +1,75 @@
 # US Equity Alpha Research
 
 <p align="center">
-  A modular U.S. equity research repo for building long-short alphas, testing regime overlays, and keeping the research pipeline readable as it scales.
+  A long-short U.S. equity research sandbox focused on robust cross-sectional signals, regime-aware overlays, and cleaner risk-adjusted implementation.
 </p>
 
 <p align="center">
-  <a href="notebooks/ma_crossover.ipynb">MA Crossover</a> |
+  <a href="notebooks/alpha_mom.ipynb">Momentum Notebook</a> |
   <a href="notebooks/hmm_alpha.ipynb">HMM Overlay</a> |
-  <a href="notebooks/alpha_mom.ipynb">Momentum Blend</a> |
-  <a href="notebooks/interview_cheatsheet.ipynb">Interview Notes</a>
+  <a href="notebooks/ma_crossover.ipynb">MA Crossover</a> |
+  <a href="notebooks/function_sets.ipynb">Function Set</a>
 </p>
 
 ## Research Thesis
 
-The repo is organized like a compact research platform rather than a scratch directory. Reusable signal logic lives in `src/`, notebooks stay in `notebooks/`, and local market artifacts are pushed into `data/`, `outputs/`, and `artifacts/`.
+The objective is not to maximize raw backtest return. The objective is to build equity signals that remain usable after neutralization, turnover control, and regime scaling. This repo therefore emphasizes:
 
-The aim is to study signals that still look credible after neutralization, turnover control, and regime-aware sizing. That bias shows up in the code structure: alpha generation, overlays, search logic, and diagnostics are separated so each layer can be changed independently.
+- robust signal construction on noisy daily cross-sections
+- exposure control through HMM and Kalman overlays
+- practical portfolio formation rather than pure indicator ranking
+- notebook diagnostics that make failure modes visible quickly
 
-## Repository Layout
+## Snapshot
 
-```text
-.
-|- src/us_equity/
-|  |- alphas/
-|  |- overlays/
-|  |- search/
-|  \- data/
-|- notebooks/
-|- scripts/
-|- data/
-|  |- reference/
-|  |- market/
-|  \- archives/
-|- outputs/grid_search/
-|- artifacts/figures/
-\- docs/
-```
+| Item | Detail |
+| --- | --- |
+| Universe | top `~3000` U.S. common stocks |
+| Coverage | `2015-01-01` to `2022-12-31` |
+| Frequency | daily |
+| Portfolio style | long-short, neutralized, risk-scaled |
+| Core themes | EMA trend, HMM regime scaling, Kalman smoothing |
 
-## Quick Start
+## Performance Snapshot
+
+| Alpha | Annual Sharpe | CAGR | Total Return | Turnover | Max Drawdown |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| EMA Crossover | `2.65` | `0.327` | `9.128` | `0.447` | `-0.159` |
+| HMM Overlay | `2.11` | `0.254` | `5.3707` | `0.3095` | `-0.1686` |
+| Kalman Overlay | `2.12` | `0.0838` | `0.93` | `0.110` | `-0.062` |
+
+## Visual Diagnostics
+
+| EMA | HMM | Kalman |
+| --- | --- | --- |
+| ![EMA](artifacts/figures/ema.png) | ![HMM](artifacts/figures/HMM.png) | ![Kalman](artifacts/figures/kalman.png) |
+
+## Research Stack
+
+| Layer | Paths |
+| --- | --- |
+| Signal modules | `src/us_equity/alphas/`, `src/us_equity/overlays/`, `src/us_equity/data/` |
+| Search utilities | `src/us_equity/search/` |
+| Main notebooks | [`notebooks/alpha_mom.ipynb`](notebooks/alpha_mom.ipynb), [`notebooks/alpha_mom_v2.ipynb`](notebooks/alpha_mom_v2.ipynb), [`notebooks/hmm_alpha.ipynb`](notebooks/hmm_alpha.ipynb), [`notebooks/ma_crossover.ipynb`](notebooks/ma_crossover.ipynb), [`notebooks/function_sets.ipynb`](notebooks/function_sets.ipynb) |
+| Lightweight reference inputs | `data/reference/tickers.csv`, `data/reference/company_tickers.json` |
+| Local research artifacts | `data/market/`, `data/archives/`, `outputs/grid_search/` |
+
+## Pipeline
+
+1. Build an alpha matrix from daily price, volume, or fundamentals.
+2. Convert signals into neutralized portfolio weights.
+3. Apply volatility targeting or regime overlays.
+4. Backtest with transaction costs and score results with the kinked quality function.
+
+## Working Repo
+
+The repo is now structured more cleanly, but the structure is there to support the research rather than dominate it:
+
+- reusable code lives under `src/us_equity/`
+- notebooks stay under `notebooks/`
+- local market data and grid-search outputs are kept out of the root folder
+
+Run:
 
 ```bash
 python -m compileall src scripts
@@ -45,14 +77,3 @@ python scripts/yf_price_pipeline.py --tickers data/reference/tickers.csv --outdi
 python scripts/yf_ohlcv_and_meta.py --tickers data/reference/tickers.csv --outdir data/market/yf_data --progress
 python -m jupyter lab
 ```
-
-Open notebooks from `notebooks/`. Each notebook adds `src/` to `sys.path` automatically, so imports keep working after the restructure.
-
-## Research Stack
-
-- `src/us_equity/alphas/`: crossover, HMM, and blended momentum signal code.
-- `src/us_equity/overlays/`: Kalman and post-weight regime scaling, beta and drawdown controls.
-- `src/us_equity/search/`: grid search utilities and the kinked objective.
-- `src/us_equity/data/`: sector and SimFin loaders.
-- `artifacts/figures/`: README figures.
-- `docs/interview_cheatsheet.md`: narrative summary of the repo for interview prep.
