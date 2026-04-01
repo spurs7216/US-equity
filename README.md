@@ -1,7 +1,7 @@
 # US Equity Alpha Research
 
 <p align="center">
-  A long-short U.S. equity research sandbox focused on robust cross-sectional signals, regime-aware overlays, and cleaner risk-adjusted implementation.
+  A U.S. equity research sandbox focused on cross-sectional signals, regime-aware overlays, and practical portfolio construction.
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
 The objective is not to maximize raw backtest return. The objective is to build equity signals that remain usable after neutralization, turnover control, and regime scaling. This repo therefore emphasizes:
 
 - robust signal construction on noisy daily cross-sections
-- exposure control through HMM and Kalman overlays
+- exposure control through HMM regime probabilities and Kalman-filtered scaling
 - practical portfolio formation rather than pure indicator ranking
 - notebook diagnostics that make failure modes visible quickly
 
@@ -28,15 +28,17 @@ The objective is not to maximize raw backtest return. The objective is to build 
 | Coverage | `2015-01-01` to `2022-12-31` |
 | Frequency | daily |
 | Portfolio style | long-short, neutralized, risk-scaled |
-| Core themes | EMA trend, HMM regime scaling, Kalman smoothing |
+| Core themes | EMA trend, HMM regime scaling, Kalman filtering |
 
-## Performance Snapshot
+## Illustrative Performance Snapshot
+
+These figures are notebook research outputs, not production claims. They are useful for comparing ideas inside the repo, but they should not be read as a finalized or out-of-sample track record.
 
 | Alpha | Annual Sharpe | CAGR | Total Return | Turnover | Max Drawdown |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | EMA Crossover | `2.65` | `0.327` | `9.128` | `0.447` | `-0.159` |
 | HMM Overlay | `2.11` | `0.254` | `5.3707` | `0.3095` | `-0.1686` |
-| Kalman Overlay | `2.12` | `0.0838` | `0.93` | `0.110` | `-0.062` |
+| Kalman Filter Overlay | `2.12` | `0.0838` | `0.93` | `0.110` | `-0.062` |
 
 ## Visual Diagnostics
 
@@ -60,6 +62,7 @@ The objective is not to maximize raw backtest return. The objective is to build 
 2. Convert signals into neutralized portfolio weights.
 3. Apply volatility targeting or regime overlays.
 4. Backtest with transaction costs and score results with the kinked quality function.
+5. Review diagnostics before treating any result as a credible research lead.
 
 ## Working Repo
 
