@@ -195,11 +195,13 @@ def fit_hmm_filtered_prob_up_v2(
         if should_refit:
             start = 0 if train_window is None else max(0, obs_count - int(train_window))
             x_train = x[start:obs_count]
+            # Refit from a fresh initialization each window. Warm-starting the EM step can
+            # collapse the parameters to a degenerate zero state on this dataset.
             pi, a, mu, sigma, _ = _em_fit_2s(
                 x_train,
                 n_iter=n_iter,
                 tol=tol,
-                init_params=params,
+                init_params=None,
             )
             params = (pi, a, mu, sigma)
             filtered_state = _filter_probs_2s(x_train, pi, a, mu, sigma)[-1]
