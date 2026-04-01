@@ -7,4 +7,5 @@ data/market/yf_data/
 data/market/close.parquet
 data/archives/yf_data.zip
 outputs/grid_search/*.csv
+outputs/walkforward/*.csv
 notebooks/scratch/function_sets-Copy1.ipynb
