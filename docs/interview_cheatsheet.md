@@ -135,7 +135,7 @@ Observation:
 y_t=x_t+v_t
 \]
 
-Used to smooth the HMM-derived exposure scale and reduce regime jitter.
+Used to apply a causal Kalman filter to the HMM-derived exposure scale and reduce regime jitter.
 
 ## Why This Looks Like Good Research
 
@@ -175,6 +175,6 @@ Because the loss is asymmetric. Falling below acceptable Sharpe or exceeding acc
 - `alpha_hmm.py`: robust market series, HMM fit, regime modulation
 - `alpha_fund_momentum.py`: blended price and fundamental alpha
 - `risk_overlays.py`: market-vol, beta-neutral, drawdown scaling
-- `kalman_overlays.py`: smoother regime exposure
+- `kalman_overlays.py`: Kalman-filtered regime exposure
 - `grid_search_pipeline.py`: modular parameter search and scoring
 - `quality_kinked.py`: asymmetric objective design

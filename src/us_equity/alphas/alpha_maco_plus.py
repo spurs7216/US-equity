@@ -3,7 +3,7 @@
 # - Robust volatility via rolling MAD
 # - Hard-cap absurd returns (mask), stale-quote filter
 # - Cross-sectional gating with fallback (quantile/top-fraction/min breadth)
-# - Temporal smoothing
+# - Causal EMA averaging
 # Produces a dates×tickers alpha matrix compatible with your make_weights/backtest.
 #
 # File: /mnt/data/alpha_ema_robust.py
@@ -79,7 +79,7 @@ def alpha_ema_crossover_robust(
     stale_lookback: int = 5,
     stale_std_bp: float = 1.0,
     hard_cap_abs_return: float = 0.50,
-    # smoothing
+    # causal EMA averaging
     smooth_span: Optional[int] = 5,
 ) -> Tuple[pd.DataFrame, Dict[str, pd.Series]]:
 
@@ -135,7 +135,7 @@ def alpha_ema_crossover_robust(
     inv_vol = 1.0 / sigma.clip(lower=1e-6)
     alpha = sig * inv_vol
 
-    # 5) Temporal smoothing
+    # 5) Causal EMA averaging
     if smooth_span and smooth_span > 1:
         alpha = alpha.ewm(span=smooth_span, adjust=False, min_periods=smooth_span).mean()
 

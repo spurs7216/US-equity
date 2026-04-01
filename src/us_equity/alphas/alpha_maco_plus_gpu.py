@@ -1,7 +1,7 @@
 # GPU-accelerated EMA crossover (PyTorch): drop-in replacement for faster alpha builds.
 # - Works on CUDA if available; otherwise falls back to CPU torch (still fast).
 # - Uses LOG-price EMAs (fast/slow), robust vol (EWM absolute deviation), winsorized returns,
-#   stale-quote filter, cross-sectional gating (quantile/top-fraction/min breadth), smoothing.
+#   stale-quote filter, cross-sectional gating (quantile/top-fraction/min breadth), and causal EMA averaging.
 # - Returns a pandas DataFrame alpha (dates × tickers) and diagnostics.
 #
 # File: /mnt/data/alpha_ema_gpu.py
@@ -122,7 +122,7 @@ def alpha_ema_crossover_gpu(
     threshold_q: float = 0.95,
     top_frac: float = 0.20,
     min_keep: int = 300,
-    # smoothing
+    # causal EMA averaging
     smooth_span: int = 5,
     device: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, pd.Series]]:
@@ -204,7 +204,7 @@ def alpha_ema_crossover_gpu(
     inv_vol = 1.0 / torch.clamp(sigma, min=1e-6)
     alpha = sig * inv_vol
 
-    # 6) Temporal smoothing (optional)
+    # 6) Causal EMA averaging (optional)
     if smooth_span and smooth_span > 1:
         alpha = _ema_scan(alpha, smooth_span, min_periods=smooth_span)
 
@@ -225,4 +225,3 @@ def alpha_ema_crossover_gpu(
         "hard_capped_frac": float(bad.float().mean().item()) if bad.numel() else 0.0
     }
     return alpha_df, diag
-

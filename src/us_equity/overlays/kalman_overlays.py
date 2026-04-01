@@ -55,7 +55,7 @@ def em_fit_hmm_2s(x: np.ndarray, n_iter: int = 50, tol: float = 1e-6):
         ll = np.sum(np.log(c + 1e-300))
         # E step helper for A
         # Backward part for xi via one-step recursion (approx for speed)
-        # Use smoothed state probs at t and t+1 to re-estimate A (quick EM)
+        # Use forward-backward state posteriors at t and t+1 to re-estimate A (quick EM)
         g0 = gamma[:-1]; g1 = gamma[1:]
         A = (g0.T @ g1); A = A / (A.sum(axis=1, keepdims=True) + 1e-300)
         # pi

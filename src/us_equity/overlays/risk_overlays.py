@@ -63,7 +63,7 @@ def dd_exposure_scale(ret_series: pd.Series, window: int = 252, dd_cut: float = 
     eq = (1.0 + ret_series.fillna(0)).cumprod()
     peak = eq.cummax()
     dd = (eq/peak - 1.0).clip(lower=-1.0)
-    # smooth drawdown via EMA
+    # stabilize drawdown with a causal EMA
     lam = np.exp(np.log(0.5)/max(1,halflife))
     dd_s = dd.ewm(alpha=1-lam, adjust=False).mean()
     # map to scale

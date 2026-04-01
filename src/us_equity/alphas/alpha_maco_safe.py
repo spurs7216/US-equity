@@ -2,7 +2,7 @@
 # - Adaptive EMA crossover (less whipsaw than SMA)
 # - Cross-sectional tail + fallback top-fraction keep
 # - OBV (volume) confirmation filter
-# - Hysteresis / temporal smoothing to cut turnover
+# - Hysteresis / causal EMA averaging to cut turnover
 # - Sector/industry neutrality hook (optional; pass your metadata map)
 # - Volatility targeting (ex-ante, no look-ahead) on portfolio weights
 #
@@ -52,7 +52,7 @@ def alpha_maco_plus(
     obv_span: int = 20,                   # OBV z-score window (via EMA approx)
     vol_floor: float = 1e-6,
     mask: Optional[pd.DataFrame] = None,
-    smooth_span: Optional[int] = 5,       # temporal smoothing of alpha to cut turnover
+    smooth_span: Optional[int] = 5,       # causal EMA averaging of alpha to cut turnover
 ) -> pd.DataFrame:
     if not isinstance(close, pd.DataFrame):
         raise TypeError("close must be a DataFrame")
@@ -128,7 +128,7 @@ def alpha_maco_plus(
         short_mask = (alpha < 0) & (obv_z < 0)
         alpha = alpha.where(long_mask | short_mask, 0.0)
 
-    # Temporal smoothing to cut churn (optional)
+    # Causal EMA averaging to cut churn (optional)
     if smooth_span and smooth_span > 1:
         alpha = alpha.ewm(span=smooth_span, adjust=False, min_periods=smooth_span).mean()
 
@@ -178,6 +178,5 @@ def vol_target_weights(
     # apply scale to *current* weights (decided at t for use on t+1)
     w_scaled = weights.mul(scale, axis=0).fillna(0.0)
     return w_scaled
-
 
 

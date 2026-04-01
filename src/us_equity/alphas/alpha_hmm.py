@@ -130,7 +130,7 @@ def hmm_market_regime_alpha(
     winsor_k: float = 7.0,
     hmm_iter: int = 50,
     hmm_tol: float = 1e-6,
-    smooth_span: Optional[int] = 3,   # smooth regime series for stability
+    smooth_span: Optional[int] = 3,   # causal EMA averaging of the regime series for stability
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
 
     # 1) Returns and winsor
