@@ -1,11 +1,11 @@
-"""Walk-forward HMM plus causal Kalman regime scaling."""
+"""Versioned HMM plus causal Kalman regime scaling."""
 
 from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
-from us_equity.alphas.alpha_hmm_walkforward import robust_market_series, walkforward_hmm_filtered_prob_up
+from us_equity.alphas.alpha_hmm_v3 import robust_market_series, fit_hmm_filtered_prob_up_v2
 
 
 def _expanding_quantile_shifted(series: pd.Series, q: float, min_periods: int) -> pd.Series:
@@ -17,7 +17,7 @@ def _expanding_quantile_shifted(series: pd.Series, q: float, min_periods: int) -
     return out
 
 
-def fit_hmm_2state_prob_up_walkforward(
+def fit_hmm_2state_prob_up_v2(
     series: pd.Series,
     min_history: int = 252,
     refit_every: int = 1,
@@ -25,7 +25,7 @@ def fit_hmm_2state_prob_up_walkforward(
     n_iter: int = 50,
     tol: float = 1e-6,
 ) -> Tuple[pd.Series, Dict[str, Any]]:
-    return walkforward_hmm_filtered_prob_up(
+    return fit_hmm_filtered_prob_up_v2(
         series,
         min_history=min_history,
         refit_every=refit_every,
@@ -35,7 +35,7 @@ def fit_hmm_2state_prob_up_walkforward(
     )
 
 
-def map_prob_to_scale_walkforward(
+def map_prob_to_scale_v2(
     p_up: pd.Series,
     mode: str = "dynamic",
     p_lo: float = 0.45,
@@ -121,7 +121,7 @@ def kalman_filter_series_diag(
     )
 
 
-def build_regime_scale_walkforward(
+def build_regime_scale_v2(
     close: pd.DataFrame,
     winsor_k: float = 7.0,
     hmm_min_history: int = 252,
@@ -142,7 +142,7 @@ def build_regime_scale_walkforward(
     floor: float = 0.3,
 ) -> Tuple[pd.Series, Dict[str, Any]]:
     market = robust_market_series(close, winsor_k=winsor_k)
-    p_up, hmm_diag = fit_hmm_2state_prob_up_walkforward(
+    p_up, hmm_diag = fit_hmm_2state_prob_up_v2(
         market,
         min_history=hmm_min_history,
         refit_every=hmm_refit_every,
@@ -151,7 +151,7 @@ def build_regime_scale_walkforward(
         tol=hmm_tol,
     )
 
-    scale_raw = map_prob_to_scale_walkforward(
+    scale_raw = map_prob_to_scale_v2(
         p_up,
         mode=mode,
         p_lo=p_lo,

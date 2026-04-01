@@ -1,14 +1,14 @@
-"""Walk-forward regime post-scaling wrapper."""
+"""Versioned regime post-scaling wrapper."""
 
 import pandas as pd
 
-from us_equity.overlays.kalman_overlays_walkforward import (
+from us_equity.overlays.kalman_overlays_v2 import (
     apply_scale_to_weights,
-    build_regime_scale_walkforward,
+    build_regime_scale_v2,
 )
 
 
-def regime_post_scale_walkforward(
+def regime_post_scale_v2(
     weights: pd.DataFrame,
     close: pd.DataFrame,
     winsor_k: float = 7.0,
@@ -29,7 +29,7 @@ def regime_post_scale_walkforward(
     z_gate: float = 2.5,
     floor: float = 0.3,
 ) -> pd.DataFrame:
-    scale, _ = build_regime_scale_walkforward(
+    scale, _ = build_regime_scale_v2(
         close=close,
         winsor_k=winsor_k,
         hmm_min_history=hmm_min_history,

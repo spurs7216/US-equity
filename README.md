@@ -6,7 +6,8 @@
 
 <p align="center">
   <a href="notebooks/alpha_mom.ipynb">Momentum Notebook</a> |
-  <a href="notebooks/hmm_alpha.ipynb">HMM Overlay</a> |
+  <a href="notebooks/hmm_alpha.ipynb">HMM Overlay (Legacy)</a> |
+  <a href="notebooks/hmm_alpha_v2.ipynb">HMM Overlay v2</a> |
   <a href="notebooks/ma_crossover.ipynb">MA Crossover</a> |
   <a href="notebooks/function_sets.ipynb">Function Set</a>
 </p>
@@ -16,9 +17,10 @@
 The objective is not to maximize raw backtest return. The objective is to build equity signals that remain usable after neutralization, turnover control, and regime scaling. This repo therefore emphasizes:
 
 - robust signal construction on noisy daily cross-sections
-- exposure control through HMM regime probabilities and Kalman-filtered scaling
+- exposure control through regime probabilities and causal Kalman filtering
 - practical portfolio formation rather than pure indicator ranking
 - notebook diagnostics that make failure modes visible quickly
+- versioned research paths when a notebook needs a cleaner rerun
 
 ## Snapshot
 
@@ -28,19 +30,17 @@ The objective is not to maximize raw backtest return. The objective is to build 
 | Coverage | `2015-01-01` to `2022-12-31` |
 | Frequency | daily |
 | Portfolio style | long-short, neutralized, risk-scaled |
-| Core themes | EMA trend, HMM regime scaling, Kalman filtering |
+| Core themes | EMA trend, momentum, regime overlays |
 
-## Illustrative Performance Snapshot
+## Research Status
 
-These figures are notebook research outputs, not production claims. They are useful for comparing ideas inside the repo, but they should not be read as a finalized or out-of-sample track record.
-
-| Alpha | Annual Sharpe | CAGR | Total Return | Turnover | Max Drawdown |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| EMA Crossover | `2.65` | `0.327` | `9.128` | `0.447` | `-0.159` |
-| HMM Overlay | `2.11` | `0.254` | `5.3707` | `0.3095` | `-0.1686` |
-| Kalman Filter Overlay | `2.12` | `0.0838` | `0.93` | `0.110` | `-0.062` |
+- `notebooks/hmm_alpha.ipynb` is preserved as the original regime notebook for reference.
+- `notebooks/hmm_alpha_v2.ipynb` is the cleaner rerun path with expanding or rolling HMM re-estimation before the Kalman filter step.
+- Until the v2 notebook is rerun end-to-end, regime metrics in this repo should be treated as preliminary research rather than bias-free portfolio evidence.
 
 ## Visual Diagnostics
+
+The regime figures below are legacy diagnostics kept for comparison while the v2 regime path is being rerun.
 
 | EMA | HMM | Kalman |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ These figures are notebook research outputs, not production claims. They are use
 | --- | --- |
 | Signal modules | `src/us_equity/alphas/`, `src/us_equity/overlays/`, `src/us_equity/data/` |
 | Search utilities | `src/us_equity/search/` |
-| Main notebooks | [`notebooks/alpha_mom.ipynb`](notebooks/alpha_mom.ipynb), [`notebooks/alpha_mom_v2.ipynb`](notebooks/alpha_mom_v2.ipynb), [`notebooks/hmm_alpha.ipynb`](notebooks/hmm_alpha.ipynb), [`notebooks/ma_crossover.ipynb`](notebooks/ma_crossover.ipynb), [`notebooks/function_sets.ipynb`](notebooks/function_sets.ipynb) |
+| Main notebooks | [`notebooks/alpha_mom.ipynb`](notebooks/alpha_mom.ipynb), [`notebooks/alpha_mom_v2.ipynb`](notebooks/alpha_mom_v2.ipynb), [`notebooks/hmm_alpha.ipynb`](notebooks/hmm_alpha.ipynb), [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb), [`notebooks/ma_crossover.ipynb`](notebooks/ma_crossover.ipynb), [`notebooks/function_sets.ipynb`](notebooks/function_sets.ipynb) |
 | Lightweight reference inputs | `data/reference/tickers.csv`, `data/reference/company_tickers.json` |
 | Local research artifacts | `data/market/`, `data/archives/`, `outputs/grid_search/` |
 

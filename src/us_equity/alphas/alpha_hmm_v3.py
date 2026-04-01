@@ -1,4 +1,4 @@
-"""Walk-forward HMM regime overlays without full-sample parameter leakage."""
+"""Versioned HMM regime overlays with expanding or rolling re-estimation."""
 
 from typing import Any, Callable, Dict, Optional, Tuple
 
@@ -93,7 +93,7 @@ def _em_fit_2s(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]:
     x = x[np.isfinite(x)]
     if x.size < 10:
-        raise ValueError("Not enough data to fit HMM.")
+        raise ValueError("Not enough data to fit the HMM.")
 
     if init_params is None:
         pi, a, mu, sigma = _init_params_2s(x)
@@ -164,7 +164,7 @@ def _update_filtered_state(
     return curr
 
 
-def walkforward_hmm_filtered_prob_up(
+def fit_hmm_filtered_prob_up_v2(
     series: pd.Series,
     min_history: int = 252,
     refit_every: int = 1,
@@ -219,7 +219,7 @@ def walkforward_hmm_filtered_prob_up(
     }
 
 
-def hmm_market_regime_alpha_walkforward(
+def hmm_market_regime_alpha_v2(
     close: pd.DataFrame,
     base_alpha_fn: Callable[..., pd.DataFrame],
     base_alpha_kwargs: Dict[str, Any],
@@ -236,9 +236,9 @@ def hmm_market_regime_alpha_walkforward(
 
     r_bar = robust_market_series(close, winsor_k=winsor_k)
     if len(r_bar) < min_history:
-        raise ValueError("Not enough observations in r_bar to fit the walk-forward HMM.")
+        raise ValueError("Not enough observations in r_bar to fit the v2 HMM overlay.")
 
-    p_up, wf_diag = walkforward_hmm_filtered_prob_up(
+    p_up, wf_diag = fit_hmm_filtered_prob_up_v2(
         r_bar,
         min_history=min_history,
         refit_every=refit_every,

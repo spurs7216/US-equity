@@ -1,11 +1,11 @@
-"""Walk-forward HMM scale overlay without full-sample parameter leakage."""
+"""Versioned HMM scale overlay with expanding or rolling re-estimation."""
 
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
-from us_equity.alphas.alpha_hmm_walkforward import robust_market_series, walkforward_hmm_filtered_prob_up
+from us_equity.alphas.alpha_hmm_v3 import robust_market_series, fit_hmm_filtered_prob_up_v2
 
 
 def _map_prob_to_scale(p: float, p_lo: float, p_hi: float) -> float:
@@ -18,7 +18,7 @@ def _map_prob_to_scale(p: float, p_lo: float, p_hi: float) -> float:
     return (p - p_lo) / max(1e-9, (p_hi - p_lo))
 
 
-def hmm_overlay_scale_walkforward(
+def hmm_overlay_scale_v2(
     close: pd.DataFrame,
     base_alpha_fn: Callable[..., pd.DataFrame],
     base_alpha_kwargs: Dict[str, Any],
@@ -34,9 +34,9 @@ def hmm_overlay_scale_walkforward(
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     r_bar = robust_market_series(close, winsor_k=winsor_k)
     if len(r_bar) < min_history:
-        raise ValueError("Not enough data for a walk-forward HMM scale overlay.")
+        raise ValueError("Not enough data for the v2 HMM scale overlay.")
 
-    p_up, wf_diag = walkforward_hmm_filtered_prob_up(
+    p_up, wf_diag = fit_hmm_filtered_prob_up_v2(
         r_bar,
         min_history=min_history,
         refit_every=refit_every,
