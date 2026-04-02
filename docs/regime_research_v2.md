@@ -1,8 +1,8 @@
 # Regime Research V2
 
-The original HMM and Kalman regime notebooks are preserved for reference, but the original regime fit uses full-sample HMM parameter estimation and should be treated as preliminary research.
+This note summarizes the public regime workflow used in the repository.
 
-The separate v2 path lives here:
+## Core Files
 
 - `src/us_equity/alphas/alpha_hmm_v3.py`
 - `src/us_equity/alphas/alpha_hmm_scale_v2.py`
@@ -10,11 +10,15 @@ The separate v2 path lives here:
 - `src/us_equity/overlays/regime_post_scale_v2.py`
 - `notebooks/hmm_alpha_v2.ipynb`
 
-Key differences in v2:
+## Workflow Summary
 
-- HMM parameters are re-estimated with expanding or rolling history only.
-- The Kalman step remains causal.
-- Dynamic thresholds avoid full-sample quantile fallbacks.
-- New outputs should be written under `outputs/regime_v2/`.
+1. Build a robust market series from winsorized cross-sectional log returns.
+2. Re-estimate the two-state HMM on rolling or expanding history only.
+3. Convert the filtered up-state probability into a dynamic exposure scale.
+4. Smooth that scale with a causal Kalman filter and an innovation gate.
+5. Apply the scale after weight construction so it interacts properly with portfolio-level controls.
+6. Save public regime results under `outputs/regime_v2/`.
 
-This keeps the legacy notebook available while providing a cleaner path for rerunning regime research without future-data leakage in the parameter fit.
+## Design Intent
+
+The regime layer is used as an exposure-management tool rather than a standalone return forecast. Its role is to make the base cross-sectional alpha more stable, lower whipsaw, and improve the quality of the equity curve once combined with portfolio construction and risk controls.

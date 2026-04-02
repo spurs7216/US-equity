@@ -1,7 +1,7 @@
 # US Equity Alpha Research
 
 <p align="center">
-  A U.S. equity research repo built around cross-sectional alpha design, causal regime filtering, and practical portfolio construction.
+  A U.S. equity research repo focused on cross-sectional alpha design, causal regime filtering, and practical portfolio construction.
 </p>
 
 <p align="center">
@@ -13,15 +13,15 @@
 
 ## Research Thesis
 
-This repository studies whether a simple cross-sectional trend signal can be made materially more robust through regime-aware exposure control and practical portfolio construction. The research is organized around three questions:
+This repository studies whether a simple cross-sectional trend signal can be made materially more robust through regime-aware exposure control and disciplined portfolio construction. The research is organized around three questions:
 
 - can a simple cross-sectional trend signal survive realistic portfolio construction?
 - does causal regime filtering improve exposure timing?
 - do layered portfolio controls improve the quality of the equity curve, not only the headline return?
 
-## Methodological Note
+## Public Research Path
 
-The public results in this README are drawn only from the `v2` regime workflow in [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb). That path uses causal HMM re-estimation and causal Kalman filtering. The earlier [`notebooks/hmm_alpha.ipynb`](notebooks/hmm_alpha.ipynb) notebook is retained as archived research history and is not used for reported results because its regime fit relied on full-sample HMM estimation.
+The published regime results in this repository are drawn from [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb) and the saved outputs under `outputs/regime_v2/`. The workflow uses only causal HMM re-estimation and causal Kalman filtering, so the reported curves and tables reflect the current public research path.
 
 ## Snapshot
 
@@ -35,14 +35,15 @@ The public results in this README are drawn only from the `v2` regime workflow i
 
 ## Representative Results
 
-Two reference points summarize the current `v2` research path:
+Three reference points summarize the current `v2` research path:
 
 | Configuration | Sharpe | CAGR | Total Return | Max Drawdown | Avg Turnover |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Representative v2 stack: regime scale + vol condition + beta neutralization + drawdown cap | `1.81` | `20.7%` | `3.65x` | `-16.9%` | `0.277` |
+| Kalman post-scale overlay example | `1.44` | `9.5%` | `1.09x` | `-13.7%` | `0.184` |
 | Best saved v2 configuration from grid search | `2.73` | `23.9%` | `4.76x` | `-11.2%` | `0.167` |
 
-The best saved `v2` configuration combines a fast EMA trend signal (`4/9` spans), tighter tail selection (`top_frac=0.05`), dynamic regime mapping, causal Kalman filtering, and post-weight volatility targeting. The improvement is not attributable to a single overlay in isolation. It emerges from the interaction between a cleaner base alpha, more selective portfolio formation, smoother regime scaling, and explicit risk control.
+These three rows serve different purposes. The representative stack shows the core regime-aware pipeline. The Kalman post-scale example isolates how smoother exposure control can reduce turnover and drawdown, even if it does not maximize return on its own. The best saved configuration shows the full improvement once regime smoothing is combined with a stronger alpha specification, tighter tail selection, and post-weight volatility targeting.
 
 ## Equity Curves
 
@@ -62,14 +63,26 @@ The figures below are exported from the executed `v2` notebook and reflect the c
 
 The main empirical conclusion from the current runs is that Kalman filtering improves the stack primarily as a stabilizer rather than as a standalone source of alpha. The strongest results appear when regime smoothing is combined with a stronger alpha specification, dynamic regime scaling, and post-weight risk management.
 
-## Research Workflow
+## Methodology
 
-1. Build daily panels from Yahoo Finance and reference files.
-2. Generate a cross-sectional alpha from price or fundamentals.
-3. Convert signals into neutralized portfolio weights.
-4. Apply regime scaling, volatility targeting, beta control, and drawdown control.
-5. Score the result with return, Sharpe, turnover, and concentration penalties.
-6. Review diagnostics and equity-curve behavior before treating a configuration as a credible research result.
+The alpha construction process is organized as a sequence of explicit steps:
+
+1. **Build the panel**  
+   Load daily OHLCV data and reference files, align the stock panel, and remove obviously stale observations before signal construction.
+2. **Form the base alpha**  
+   Compute a cross-sectional EMA trend signal from price history, then normalize it with robust scaling so the signal reflects relative strength rather than raw price level.
+3. **Select the tradeable tail**  
+   Apply tradability filters and keep only the strongest part of the cross-section, which concentrates capital where the signal is most informative.
+4. **Create initial portfolio weights**  
+   Convert scores into capped, normalized long-short weights and neutralize broad market exposure so the portfolio reflects stock selection rather than simple market beta.
+5. **Estimate the regime state**  
+   Build a robust market-level return series, fit a two-state HMM using only information available at each date, and convert the filtered regime probability into an exposure signal.
+6. **Stabilize exposure with Kalman filtering**  
+   Smooth the raw regime scale with a causal Kalman filter and an innovation gate to avoid abrupt leverage changes during noisy state transitions.
+7. **Apply portfolio-level risk controls**  
+   Combine regime scaling with volatility conditioning, volatility targeting, beta control, and drawdown caps so exposure falls when the environment becomes less reliable.
+8. **Evaluate and search**  
+   Backtest with transaction costs, review equity-curve diagnostics, and use a quality function that penalizes turnover and concentration alongside return and Sharpe.
 
 ## Repository Structure
 
