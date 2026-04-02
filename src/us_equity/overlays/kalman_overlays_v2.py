@@ -35,6 +35,31 @@ def fit_hmm_2state_prob_up_v2(
     )
 
 
+def prepare_regime_prob_v2(
+    close: pd.DataFrame,
+    winsor_k: float = 7.0,
+    hmm_min_history: int = 252,
+    hmm_refit_every: int = 1,
+    hmm_train_window: Optional[int] = None,
+    hmm_iter: int = 60,
+    hmm_tol: float = 1e-6,
+) -> Dict[str, Any]:
+    market = robust_market_series(close, winsor_k=winsor_k)
+    p_up, hmm_diag = fit_hmm_2state_prob_up_v2(
+        market,
+        min_history=hmm_min_history,
+        refit_every=hmm_refit_every,
+        train_window=hmm_train_window,
+        n_iter=hmm_iter,
+        tol=hmm_tol,
+    )
+    return {
+        "market": market,
+        "p_up": p_up,
+        **hmm_diag,
+    }
+
+
 def map_prob_to_scale_v2(
     p_up: pd.Series,
     mode: str = "dynamic",
@@ -72,6 +97,59 @@ def map_prob_to_scale_v2(
     scale = ((p - plo) / denom).clip(0.0, 1.0)
     scale = scale.where(p.notna())
     return scale
+
+
+def build_regime_scale_from_prob_v2(
+    p_up: pd.Series,
+    hmm_diag: Optional[Dict[str, Any]] = None,
+    mode: str = "dynamic",
+    p_lo: float = 0.45,
+    p_hi: float = 0.60,
+    roll: int = 252,
+    q_lo: float = 0.40,
+    q_hi: float = 0.60,
+    min_quantile_history: Optional[int] = None,
+    kf_q: float = 5e-5,
+    kf_r: float = 5e-4,
+    z_gate: float = 2.5,
+    floor: float = 0.3,
+) -> Tuple[pd.Series, Dict[str, Any]]:
+    scale_raw = map_prob_to_scale_v2(
+        p_up,
+        mode=mode,
+        p_lo=p_lo,
+        p_hi=p_hi,
+        roll=roll,
+        q_lo=q_lo,
+        q_hi=q_hi,
+        min_quantile_history=min_quantile_history,
+    )
+    scale_kf, scale_var, innov, innov_z = kalman_filter_series_diag(scale_raw, q=kf_q, r=kf_r, x0=0.5, p0=1.0)
+
+    gate = (innov_z.abs() <= z_gate).astype(float)
+    gate = gate.where(scale_raw.notna())
+    scale_final = np.maximum(floor, (scale_kf * gate + floor * (1 - gate)))
+    scale_final = pd.Series(scale_final, index=scale_kf.index, name="regime_scale")
+
+    available = scale_raw.notna()
+    scale_kf = scale_kf.where(available)
+    scale_var = scale_var.where(available)
+    innov = innov.where(available)
+    innov_z = innov_z.where(available)
+    scale_final = scale_final.where(available)
+
+    diag = {
+        "p_up": p_up,
+        "scale_raw": scale_raw,
+        "scale_kf": scale_kf,
+        "scale_var": scale_var,
+        "innov": innov,
+        "innov_z": innov_z,
+        "scale_final": scale_final,
+    }
+    if hmm_diag:
+        diag.update(hmm_diag)
+    return scale_final, diag
 
 
 def kalman_filter_series_diag(
@@ -141,18 +219,18 @@ def build_regime_scale_v2(
     z_gate: float = 2.5,
     floor: float = 0.3,
 ) -> Tuple[pd.Series, Dict[str, Any]]:
-    market = robust_market_series(close, winsor_k=winsor_k)
-    p_up, hmm_diag = fit_hmm_2state_prob_up_v2(
-        market,
-        min_history=hmm_min_history,
-        refit_every=hmm_refit_every,
-        train_window=hmm_train_window,
-        n_iter=hmm_iter,
-        tol=hmm_tol,
+    prepared = prepare_regime_prob_v2(
+        close=close,
+        winsor_k=winsor_k,
+        hmm_min_history=hmm_min_history,
+        hmm_refit_every=hmm_refit_every,
+        hmm_train_window=hmm_train_window,
+        hmm_iter=hmm_iter,
+        hmm_tol=hmm_tol,
     )
-
-    scale_raw = map_prob_to_scale_v2(
-        p_up,
+    return build_regime_scale_from_prob_v2(
+        prepared["p_up"],
+        hmm_diag=prepared,
         mode=mode,
         p_lo=p_lo,
         p_hi=p_hi,
@@ -160,32 +238,11 @@ def build_regime_scale_v2(
         q_lo=q_lo,
         q_hi=q_hi,
         min_quantile_history=min_quantile_history,
+        kf_q=kf_q,
+        kf_r=kf_r,
+        z_gate=z_gate,
+        floor=floor,
     )
-    scale_kf, scale_var, innov, innov_z = kalman_filter_series_diag(scale_raw, q=kf_q, r=kf_r, x0=0.5, p0=1.0)
-
-    gate = (innov_z.abs() <= z_gate).astype(float)
-    gate = gate.where(scale_raw.notna())
-    scale_final = np.maximum(floor, (scale_kf * gate + floor * (1 - gate)))
-    scale_final = pd.Series(scale_final, index=scale_kf.index, name="regime_scale")
-
-    available = scale_raw.notna()
-    scale_kf = scale_kf.where(available)
-    scale_var = scale_var.where(available)
-    innov = innov.where(available)
-    innov_z = innov_z.where(available)
-    scale_final = scale_final.where(available)
-
-    diag = {
-        "p_up": p_up,
-        "scale_raw": scale_raw,
-        "scale_kf": scale_kf,
-        "scale_var": scale_var,
-        "innov": innov,
-        "innov_z": innov_z,
-        "scale_final": scale_final,
-        **hmm_diag,
-    }
-    return scale_final, diag
 
 
 def apply_scale_to_weights(weights: pd.DataFrame, scale: pd.Series) -> pd.DataFrame:
