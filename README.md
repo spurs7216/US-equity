@@ -1,26 +1,27 @@
 # US Equity Alpha Research
 
 <p align="center">
-  A U.S. equity research sandbox focused on cross-sectional signals, regime-aware overlays, and practical portfolio construction.
+  A U.S. equity research repo built around cross-sectional alpha design, causal regime filtering, and practical portfolio construction.
 </p>
 
 <p align="center">
   <a href="notebooks/alpha_mom.ipynb">Momentum Notebook</a> |
-  <a href="notebooks/hmm_alpha.ipynb">HMM Overlay (Legacy)</a> |
-  <a href="notebooks/hmm_alpha_v2.ipynb">HMM Overlay v2</a> |
+  <a href="notebooks/hmm_alpha_v2.ipynb">Regime Notebook v2</a> |
   <a href="notebooks/ma_crossover.ipynb">MA Crossover</a> |
-  <a href="notebooks/function_sets.ipynb">Function Set</a>
+  <a href="notebooks/function_sets.ipynb">Research Utilities</a>
 </p>
 
 ## Research Thesis
 
-The objective is not to maximize raw backtest return. The objective is to build equity signals that remain usable after neutralization, turnover control, and regime scaling. This repo therefore emphasizes:
+The goal is not to maximize raw backtest return. The goal is to build a signal stack that still looks credible after neutralization, turnover control, regime scaling, and volatility management. This repo focuses on three questions:
 
-- robust signal construction on noisy daily cross-sections
-- exposure control through regime probabilities and causal Kalman filtering
-- practical portfolio formation rather than pure indicator ranking
-- notebook diagnostics that make failure modes visible quickly
-- versioned research paths when a notebook needs a cleaner rerun
+- can a simple cross-sectional trend signal survive realistic portfolio construction?
+- does causal regime filtering improve the timing of gross exposure?
+- do layered risk controls improve the quality of the equity curve, not just the headline return?
+
+## Current Public Result
+
+This README reports only the cleaner `v2` regime path in [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb). Earlier legacy regime notebooks are kept in the repo for internal reference, but their results are not used here because they relied on full-sample HMM fitting.
 
 ## Snapshot
 
@@ -29,50 +30,49 @@ The objective is not to maximize raw backtest return. The objective is to build 
 | Universe | top `~3000` U.S. common stocks |
 | Coverage | `2015-01-01` to `2022-12-31` |
 | Frequency | daily |
-| Portfolio style | long-short, neutralized, risk-scaled |
-| Core themes | EMA trend, momentum, regime overlays |
+| Portfolio style | long-short, beta-aware, volatility-scaled |
+| Core modules | EMA trend, HMM regime filter, Kalman filter overlay, drawdown cap |
 
-## Research Status
+## Representative v2 Results
 
-- `notebooks/hmm_alpha.ipynb` is preserved as the original regime notebook for reference.
-- `notebooks/hmm_alpha_v2.ipynb` is the cleaner rerun path with expanding or rolling HMM re-estimation before the Kalman filter step.
-- Until the v2 notebook is rerun end-to-end, regime metrics in this repo should be treated as preliminary research rather than bias-free portfolio evidence.
+Two useful reference points from the current notebook and saved search output:
 
-## Visual Diagnostics
+| Configuration | Sharpe | CAGR | Total Return | Max Drawdown | Avg Turnover |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| HMM scale v2 + vol condition + beta neutral + DD cap | `1.81` | `20.7%` | `3.65x` | `-16.9%` | `0.277` |
+| Best saved v2 grid result | `2.73` | `23.9%` | `4.76x` | `-11.2%` | `0.167` |
 
-The regime figures below are legacy diagnostics kept for comparison while the v2 regime path is being rerun.
+The saved best grid row uses a fast EMA trend signal (`4/9` spans), tighter tail selection (`top_frac=0.05`), dynamic regime mapping, causal Kalman filtering, and a volatility target. The improvement is not just a better regime model. It comes from the full stack working together.
 
-| EMA | HMM | Kalman |
-| --- | --- | --- |
-| ![EMA](artifacts/figures/ema.png) | ![HMM](artifacts/figures/HMM.png) | ![Kalman](artifacts/figures/kalman.png) |
+## Why The Stack Helps
 
-## Research Stack
+- **Cross-sectional EMA trend** keeps the base alpha simple and fast-moving. The signal only needs to rank stocks better than the cross-section, not predict exact returns.
+- **Tail selection and robust scaling** reduce the impact of small noisy scores. Concentrating on the strongest names raises signal-to-noise.
+- **HMM regime probabilities** translate market-state information into exposure control. The model is used as a sizing layer, not as a standalone directional forecast.
+- **Kalman filtering** smooths noisy regime probabilities without using future data. In practice it helps reduce whipsaw, turnover, and abrupt leverage changes.
+- **Vol targeting and drawdown caps** keep the strategy from overexposing itself exactly when the signal becomes unstable.
 
-| Layer | Paths |
-| --- | --- |
-| Signal modules | `src/us_equity/alphas/`, `src/us_equity/overlays/`, `src/us_equity/data/` |
-| Search utilities | `src/us_equity/search/` |
-| Main notebooks | [`notebooks/alpha_mom.ipynb`](notebooks/alpha_mom.ipynb), [`notebooks/alpha_mom_v2.ipynb`](notebooks/alpha_mom_v2.ipynb), [`notebooks/hmm_alpha.ipynb`](notebooks/hmm_alpha.ipynb), [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb), [`notebooks/ma_crossover.ipynb`](notebooks/ma_crossover.ipynb), [`notebooks/function_sets.ipynb`](notebooks/function_sets.ipynb) |
-| Lightweight reference inputs | `data/reference/tickers.csv`, `data/reference/company_tickers.json` |
-| Local research artifacts | `data/market/`, `data/archives/`, `outputs/grid_search/` |
+The main lesson from the current runs is that Kalman filtering is useful, but mostly as a stabilizer. The biggest performance lift appears when it is combined with a stronger alpha specification, dynamic regime scaling, and portfolio-level risk control.
 
-## Pipeline
+## Research Workflow
 
-1. Build an alpha matrix from daily price, volume, or fundamentals.
-2. Convert signals into neutralized portfolio weights.
-3. Apply volatility targeting or regime overlays.
-4. Backtest with transaction costs and score results with the kinked quality function.
-5. Review diagnostics before treating any result as a credible research lead.
+1. Build daily panels from Yahoo Finance and reference files.
+2. Generate a cross-sectional alpha from price or fundamentals.
+3. Convert signals into neutralized portfolio weights.
+4. Apply regime scaling, volatility targeting, and drawdown control.
+5. Score the result with return, Sharpe, turnover, and concentration penalties.
+6. Review notebook diagnostics before treating a result as a real research lead.
 
-## Working Repo
+## Repo Map
 
-The repo is now structured more cleanly, but the structure is there to support the research rather than dominate it:
+- `src/us_equity/alphas/`: alpha and regime modules
+- `src/us_equity/overlays/`: portfolio overlays and scaling logic
+- `src/us_equity/search/`: grid-search and quality scoring utilities
+- `notebooks/`: main research notebooks
+- `data/reference/`: ticker and metadata inputs
+- `outputs/regime_v2/`: saved results from the clean v2 regime search
 
-- reusable code lives under `src/us_equity/`
-- notebooks stay under `notebooks/`
-- local market data and grid-search outputs are kept out of the root folder
-
-Run:
+## Run
 
 ```bash
 python -m compileall src scripts
