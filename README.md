@@ -23,6 +23,8 @@ The goal is not to maximize raw backtest return. The goal is to build a signal s
 
 This README reports only the cleaner `v2` regime path in [`notebooks/hmm_alpha_v2.ipynb`](notebooks/hmm_alpha_v2.ipynb). Earlier legacy regime notebooks are kept in the repo for internal reference, but their results are not used here because they relied on full-sample HMM fitting.
 
+`notebooks/hmm_alpha_v2.ipynb` is the notebook worth opening first. `notebooks/hmm_alpha.ipynb` remains in the repo only as a legacy audit trail.
+
 ## Snapshot
 
 | Item | Detail |
@@ -43,6 +45,14 @@ Two useful reference points from the current notebook and saved search output:
 | Best saved v2 grid result | `2.73` | `23.9%` | `4.76x` | `-11.2%` | `0.167` |
 
 The saved best grid row uses a fast EMA trend signal (`4/9` spans), tighter tail selection (`top_frac=0.05`), dynamic regime mapping, causal Kalman filtering, and a volatility target. The improvement is not just a better regime model. It comes from the full stack working together.
+
+## Equity Curves
+
+The figures below are exported from the executed `v2` notebook and reflect the current public research path.
+
+| Regime-Scaled Stack | Kalman Post-Scale | Best Saved v2 Grid Run |
+| --- | --- | --- |
+| ![Regime-Scaled Stack](artifacts/figures/regime_v2_stack.png) | ![Kalman Post-Scale](artifacts/figures/regime_v2_kalman.png) | ![Best Saved v2 Grid Run](artifacts/figures/regime_v2_best.png) |
 
 ## Why The Stack Helps
 
